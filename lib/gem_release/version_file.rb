@@ -11,6 +11,8 @@ module GemRelease
     attr_reader :target
 
     def initialize(options = {})
+      @file_path = Configuration.new[:version_file_path]
+      validate_file_path
       @target = options[:target]
       if @target == nil || @target == ''
         @target = is_prerelease_version_number?(old_number) ? :pre : :patch
@@ -48,6 +50,10 @@ module GemRelease
     end
 
     def filename
+      unless @file_path.nil? && @file_path == {}
+        return File.expand_path(@file_path)
+      end
+
       path = gem_name
       path = path.gsub('-', '/') unless File.exist?(path_to_version_file(path))
       path = path.gsub('/', '_') unless File.exist?(path_to_version_file(path))
@@ -56,6 +62,11 @@ module GemRelease
     end
 
     protected
+      def validate_file_path
+        return unless @file_path && @file_path != {}
+        return if File.exist?(@file_path)
+        fail "#{@file_path} does not exist"
+      end
 
       def path_to_version_file(path)
         "lib/#{path}/version.rb"

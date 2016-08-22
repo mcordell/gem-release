@@ -1,4 +1,5 @@
 module GemRelease
+  autoload :ChangelogFile,   'gem_release/changelog_file'
   autoload :CommandOptions,  'gem_release/command_options'
   autoload :GemspecTemplate, 'gem_release/gemspec_template'
   autoload :Helpers,         'gem_release/helpers'

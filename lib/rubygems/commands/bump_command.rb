@@ -67,6 +67,7 @@ class Gem::Commands::BumpCommand < Gem::Command
       version = VersionFile.new(:target => (@new_version_number || options[:version]))
       if File.exist?(version.filename)
         @new_version_number ||= version.new_number
+        @previous_version_number = version.old_number
         say "Bumping #{gem_name} from #{version.old_number} to version #{version.new_number}" unless quiet?
         version.bump!
         return system("git add #{escape(version.filename)}") if options[:commit]
@@ -82,7 +83,17 @@ class Gem::Commands::BumpCommand < Gem::Command
 
     def commit
       say "Creating commit" unless quiet?
-      system("git commit -m \"Bump to #{@new_version_number}\"")
+      message = "Bump to #{@new_version_number}"
+      if options[:commit_message]
+        clog = ChangelogFile.new(old_version: @previous_version_number)
+        message += "\n"
+        if clog.has_data?
+          message += "\n#{clog.git_diff}\n#{clog.commit_list}"
+        end
+        system("git commit -m \"#{message}\"; git commit --amend")
+      else
+        system("git commit -m \"#{message}\"")
+      end
     end
 
     def push

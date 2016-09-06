@@ -27,6 +27,7 @@ class Gem::Commands::BumpCommand < Gem::Command
 
     option :version,     '-v', 'Target version: next [major|minor|patch|pre|release] or a given version number [x.x.x]'
     option :commit,      '-c', 'Perform a commit after incrementing gem version'
+    option :commit_message, '-m', 'Commit message'
     option :push,        '-p', 'Push to the git destination'
     option :destination, '-d', 'destination git repository'
     option :tag,         '-t', 'Create a git tag and push it to the git destination'
@@ -81,7 +82,12 @@ class Gem::Commands::BumpCommand < Gem::Command
 
     def commit
       say "Creating commit" unless quiet?
-      system("git commit -m \"Bump to #{@new_version_number}\"")
+      message = "Bump to #{@new_version_number}"
+      if options[:commit_message]
+        system("git commit -m \"#{message}\"; git commit --amend")
+      else
+        system("git commit -m \"#{message}\"")
+      end
     end
 
     def push

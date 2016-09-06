@@ -50,7 +50,7 @@ module GemRelease
     end
 
     def filename
-      unless @file_path.nil? && @file_path == {}
+      unless @file_path.nil? || @file_path == {}
         return File.expand_path(@file_path)
       end
 

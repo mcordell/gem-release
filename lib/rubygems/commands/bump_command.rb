@@ -26,6 +26,7 @@ class Gem::Commands::BumpCommand < Gem::Command
     super @name, 'Bump the gem version', default_options_with(options)
 
     option :version,     '-v', 'Target version: next [major|minor|patch|pre|release] or a given version number [x.x.x]'
+    option :bundle, '-b' , 'Run bundler after bumping version'
     option :commit,      '-c', 'Perform a commit after incrementing gem version'
     option :commit_message, '-m', 'Commit message'
     option :push,        '-p', 'Push to the git destination'
@@ -70,7 +71,12 @@ class Gem::Commands::BumpCommand < Gem::Command
         @previous_version_number = version.old_number
         say "Bumping #{gem_name} from #{version.old_number} to version #{version.new_number}" unless quiet?
         version.bump!
-        return system("git add #{escape(version.filename)}") if options[:commit]
+        files = [escape(version.filename)]
+        if options[:bundle]
+          system('bundle install')
+          files.push('Gemfile.lock')
+        end
+        return system("git add #{files.join(' ')}") if options[:commit]
       else
         say "Ignoring #{gem_name}. Version file #{version.filename} not found" unless quiet?
       end

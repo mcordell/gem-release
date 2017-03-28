@@ -96,7 +96,13 @@ class Gem::Commands::BumpCommand < Gem::Command
         if clog.has_data?
           message += "\n#{clog.git_diff}\n#{clog.commit_list}"
         end
-        system("git commit -m \"#{message}\"; git commit --amend")
+
+        require 'tempfile'
+        tempfile = Tempfile.new('commit_message')
+        tempfile.write(message)
+        tempfile.close
+
+        system("git commit -F #{tempfile.path}; git commit --amend")
       else
         system("git commit -m \"#{message}\"")
       end
